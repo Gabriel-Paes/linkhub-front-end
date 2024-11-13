@@ -1,7 +1,7 @@
 <template>
   <v-container class="fill-height">
     <v-row justify="center">
-      <v-card class="px-6 py-8" width="500">
+      <v-card class="px-6 py-8 mx-auto" width="500">
         <div class="logo">
           <img class="logo__img" src="@/assets/linkhub-logo.jpeg" alt="" />
         </div>
@@ -14,18 +14,20 @@
             class="mb-2"
             label="Email"
             clearable
+            variant="underlined"
           ></v-text-field>
 
           <v-text-field
             v-model="password"
             :readonly="loading"
             :rules="[required]"
+            :append-inner-icon="visible ? 'mdi-eye-off' : 'mdi-eye'"
+            :type="visible ? 'text' : 'password'"
             label="Password"
-            type="password"
-            placeholder="Enter your password"
             clearable
+            variant="underlined"
+            @click:append-inner="visible = !visible"
           ></v-text-field>
-
           <br />
 
           <v-btn
@@ -55,38 +57,35 @@
   </v-container>
 </template>
 
-<script>
+<script setup>
+import { ref } from "vue";
 import { useRouter } from "vue-router";
 
 const router = useRouter();
 
-export default {
-  data: () => ({
-    form: false,
-    email: null,
-    password: null,
-    loading: false,
-  }),
+const form = ref(false);
+const email = ref(null);
+const password = ref(null);
+const visible = ref(false);
+const loading = ref(false);
 
-  methods: {
-    onSubmit() {
-      if (!this.form) return;
+const required = (value) => {
+  return !!value || "Field is required";
+};
 
-      this.loading = true;
+const onSubmit = () => {
+  if (!form.value) return;
 
-      const user = { email: this.email, password: this.password };
+  loading.value = true;
 
-      localStorage.setItem("user", JSON.stringify(user));
+  const user = { email: email.value, password: password.value };
 
-      setTimeout(() => {
-        this.loading = false;
-        router.push({ name: "Home" });
-      }, 2000);
-    },
-    required(v) {
-      return !!v || "Field is required";
-    },
-  },
+  localStorage.setItem("user", JSON.stringify(user));
+
+  setTimeout(() => {
+    loading.value = false;
+    router.push({ name: "Home" });
+  }, 2000);
 };
 </script>
 
@@ -95,7 +94,7 @@ export default {
   width: 100%;
   text-align: center;
   &__img {
-    height: 140px;
+    height: 120px;
     border-radius: 50%;
   }
 }

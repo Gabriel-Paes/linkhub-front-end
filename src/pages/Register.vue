@@ -1,6 +1,7 @@
 <template>
   <v-container class="fill-height">
-    <v-card class="px-6 py-8 mx-auto" width="500" title="Registration">
+    <v-card class="px-6 py-8 mx-auto" width="500">
+      <h1 class="mb-2 text-center">Registration</h1>
       <v-form v-model="form" @submit.prevent="onSubmit">
         <v-container>
           <v-text-field
@@ -26,13 +27,26 @@
 
           <v-text-field
             v-model="password"
+            :readonly="loading"
+            :rules="[required]"
+            :append-inner-icon="visible ? 'mdi-eye-off' : 'mdi-eye'"
+            :type="visible ? 'text' : 'password'"
             color="primary"
             label="Password"
-            placeholder="Enter your password"
+            clearable
             variant="underlined"
+            @click:append-inner="visible = !visible"
           ></v-text-field>
 
           <v-card-actions>
+            <v-btn
+              color="primary"
+              variant="outlined"
+              prepend-icon="mdi-arrow-left"
+              to="Login"
+            >
+              Go back
+            </v-btn>
             <v-spacer></v-spacer>
 
             <v-btn
@@ -40,6 +54,7 @@
               :disabled="!form"
               :loading="loading"
               type="submit"
+              variant="flat"
             >
               Complete Registration
 
@@ -52,42 +67,39 @@
   </v-container>
 </template>
 
-<script>
+<script setup>
+import { ref } from "vue";
 import { useRouter } from "vue-router";
 
 const router = useRouter();
 
-export default {
-  data: () => ({
-    form: false,
-    name: null,
-    username: null,
-    email: null,
-    password: null,
-    loading: false,
-  }),
+const form = ref(false);
+const name = ref(null);
+const username = ref(null);
+const email = ref(null);
+const password = ref(null);
+const visible = ref(false);
+const loading = ref(false);
 
-  methods: {
-    onSubmit() {
-      if (!this.form) return;
+const required = (value) => {
+  return !!value || "Field is required";
+};
 
-      this.loading = true;
+const onSubmit = () => {
+  if (!form.value) return;
 
-      const body = {
-        name: this.name,
-        username: this.username,
-        email: this.email,
-        password: this.password,
-      };
+  loading.value = true;
 
-      setTimeout(() => {
-        this.loading = false;
-        router.push({ name: "Login" });
-      }, 2000);
-    },
-    required(v) {
-      return !!v || "Field is required";
-    },
-  },
+  const body = {
+    name: name.value,
+    username: username.value,
+    email: email.value,
+    password: password.value,
+  };
+
+  setTimeout(() => {
+    loading.value = false;
+    router.push({ name: "Login" });
+  }, 2000);
 };
 </script>

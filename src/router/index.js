@@ -1,7 +1,5 @@
 import { createWebHistory, createRouter } from "vue-router";
 
-import Index from "../pages/Index.vue";
-
 const routes = [
   {
     path: "/login",
@@ -14,11 +12,11 @@ const routes = [
     component: () => import("../pages/Register.vue"),
   },
   {
-    path: "/index",
-    name: "Index",
-    component: () => import("../pages/index.vue"),
+    path: "/",
+    name: "Home",
+    component: () => import("../pages/Index.vue"),
+    meta: { requiresAuth: true },
   },
-  { path: "/", name: "Home", component: Index, meta: { requiresAuth: true } },
   {
     path: "/logoff",
     name: "Logoff",
