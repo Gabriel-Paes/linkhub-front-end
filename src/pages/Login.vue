@@ -56,6 +56,10 @@
 </template>
 
 <script>
+import { useRouter } from "vue-router";
+
+const router = useRouter();
+
 export default {
   data: () => ({
     form: false,
@@ -70,7 +74,14 @@ export default {
 
       this.loading = true;
 
-      setTimeout(() => (this.loading = false), 2000);
+      const user = { email: this.email, password: this.password };
+
+      localStorage.setItem("user", JSON.stringify(user));
+
+      setTimeout(() => {
+        this.loading = false;
+        router.push({ name: "Home" });
+      }, 2000);
     },
     required(v) {
       return !!v || "Field is required";
