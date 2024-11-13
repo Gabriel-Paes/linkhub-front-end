@@ -13,6 +13,11 @@ const routes = [
     name: "Register",
     component: () => import("../pages/Register.vue"),
   },
+  {
+    path: "/index",
+    name: "Index",
+    component: () => import("../pages/index.vue"),
+  },
   { path: "/", name: "Home", component: Index, meta: { requiresAuth: true } },
   {
     path: "/logoff",
