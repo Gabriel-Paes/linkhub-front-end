@@ -71,6 +71,8 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 
+import { register } from "@/controllers";
+
 const router = useRouter();
 
 const form = ref(false);
@@ -85,21 +87,24 @@ const required = (value) => {
   return !!value || "Field is required";
 };
 
-const onSubmit = () => {
+const onSubmit = async () => {
   if (!form.value) return;
 
   loading.value = true;
 
-  const body = {
-    name: name.value,
-    username: username.value,
-    email: email.value,
-    password: password.value,
-  };
+  try {
+    await register({
+      name: name.value,
+      username: username.value,
+      email: email.value,
+      password: password.value,
+    });
 
-  setTimeout(() => {
-    loading.value = false;
     router.push({ name: "Login" });
-  }, 2000);
+  } catch (error) {
+    console.error(error);
+  } finally {
+    loading.value = false;
+  }
 };
 </script>
