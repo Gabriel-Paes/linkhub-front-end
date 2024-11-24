@@ -22,7 +22,7 @@ const routes = [
     name: "Logoff",
     meta: { requiresAuth: true },
     beforeEnter: (to, from, next) => {
-      localStorage.removeItem("user");
+      localStorage.removeItem("tokens");
       next({ name: "Login" });
     },
   },
@@ -34,7 +34,7 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
-  const isAuthenticated = !!localStorage.getItem("user");
+  const isAuthenticated = !!localStorage.getItem("tokens");
 
   if (to.meta.requiresAuth && !isAuthenticated) {
     // Redireciona para login se a rota requer autenticação e o usuário não está autenticado
