@@ -8,6 +8,9 @@ const _axios = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
+const setTokens = (tokens) =>
+  localStorage.setItem("tokens", JSON.stringify(tokens));
+
 const register = async ({ name, username, email, password }) => {
   try {
     const res = await _axios.post("/register/", {
@@ -22,4 +25,14 @@ const register = async ({ name, username, email, password }) => {
   }
 };
 
-export { register };
+const token = async ({ email, password }) => {
+  try {
+    const res = await _axios.post("/token/", { email, password });
+    setTokens(res.data);
+    return { ok: true };
+  } catch (error) {
+    throw error.response?.data;
+  }
+};
+
+export { register, token };

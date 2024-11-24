@@ -60,6 +60,7 @@
 <script setup>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
+import { token } from "@/controllers";
 
 const router = useRouter();
 
@@ -73,19 +74,25 @@ const required = (value) => {
   return !!value || "Field is required";
 };
 
-const onSubmit = () => {
+const onSubmit = async () => {
   if (!form.value) return;
 
   loading.value = true;
 
-  const user = { email: email.value, password: password.value };
+  try {
+    const res = await token({
+      email: email.value,
+      password: password.value,
+    });
 
-  localStorage.setItem("user", JSON.stringify(user));
-
-  setTimeout(() => {
+    if (res.ok) {
+      router.push({ name: "Home" });
+    }
+  } catch (error) {
+    console.error(error);
+  } finally {
     loading.value = false;
-    router.push({ name: "Home" });
-  }, 2000);
+  }
 };
 </script>
 
