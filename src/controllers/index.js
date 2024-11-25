@@ -89,4 +89,13 @@ const tokenRefresh = async ({ refresh }) => {
   }
 };
 
-export { register, token };
+const getRoom = async () => {
+  try {
+    const res = await _axios.get("/room/");
+    return res.data;
+  } catch (error) {
+    throw error.response?.data;
+  }
+};
+
+export { register, token, getRoom };

@@ -3,21 +3,13 @@
     <v-navigation-drawer app v-model="drawer" temporary>
       <v-list>
         <v-list-item>
-          <v-list-item-avatar>
-            <v-icon>mdi-account-circle</v-icon>
-          </v-list-item-avatar>
-          <v-list-item-content>
-            <v-list-item-title>{{ user }}</v-list-item-title>
-            <v-list-item-subtitle>{{ email }}</v-list-item-subtitle>
-          </v-list-item-content>
+          <v-icon>mdi-account-circle</v-icon>
         </v-list-item>
 
         <v-divider></v-divider>
 
         <v-list-item @click="logoff">
-          <v-list-item-icon>
-            <v-icon>mdi-logout</v-icon>
-          </v-list-item-icon>
+          <v-icon>mdi-logout</v-icon>
           <v-list-item-title>Logoff</v-list-item-title>
         </v-list-item>
       </v-list>
@@ -49,7 +41,13 @@
       </v-row>
 
       <v-row>
-        <v-col cols="12" md="4" v-for="(sala, i) in filteredSalas" :key="i">
+        <v-col
+          cols="12"
+          md="4"
+          v-if="!loading"
+          v-for="(sala, i) in filteredSalas"
+          :key="i"
+        >
           <v-card class="pa-3">
             <v-card-title>{{ sala.nome }}</v-card-title>
             <v-card-subtitle>{{ sala.pessoa }}</v-card-subtitle>
@@ -59,6 +57,9 @@
               <v-btn color="success" variant="flat">Join</v-btn>
             </v-card-actions>
           </v-card>
+        </v-col>
+        <v-col cols="12" md="4" v-else v-for="n in 6">
+          <v-skeleton-loader :elevation="1" type="card"></v-skeleton-loader>
         </v-col>
       </v-row>
     </v-container>
@@ -72,11 +73,13 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
+import { getRoom } from "@/controllers";
+import { ro } from "vuetify/locale";
 
-const user = ref(null);
-const email = ref(null);
 const drawer = ref(false);
 const router = useRouter();
+const loading = ref(false);
+const rooms = ref([]);
 
 const salas = ref([
   { nome: "Sala-001", pessoa: "Ricardo Sousa" },
@@ -95,11 +98,18 @@ const filteredSalas = computed(() => {
   );
 });
 
-onMounted(() => {
-  const userData = JSON.parse(localStorage.getItem("user"));
-  if (userData) {
-    user.value = userData.name;
-    email.value = userData.email;
+onMounted(async () => {
+  try {
+    loading.value = true;
+    const { data } = await getRoom();
+
+    rooms.value = data;
+
+    console.log(rooms.value);
+  } catch (error) {
+    console.error(error);
+  } finally {
+    loading.value = false;
   }
 });
 

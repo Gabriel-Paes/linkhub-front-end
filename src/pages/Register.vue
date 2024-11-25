@@ -70,7 +70,6 @@
 <script setup>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-
 import { register } from "@/controllers";
 
 const router = useRouter();
