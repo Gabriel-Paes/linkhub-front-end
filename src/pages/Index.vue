@@ -36,7 +36,46 @@
           ></v-text-field>
         </v-col>
         <v-col cols="4" md="2" class="text-right">
-          <v-btn class="ma-2" color="primary">+ NEW</v-btn>
+          <v-dialog max-width="500" persistent>
+            <template v-slot:activator="{ props: activatorProps }">
+              <v-btn v-bind="activatorProps" class="ma-2" color="primary">
+                + NEW
+              </v-btn>
+            </template>
+
+            <template v-slot:default="{ isActive }">
+              <v-card title="New Room">
+                <v-card-text>
+                  <v-row dense>
+                    <v-col cols="12">
+                      <v-text-field
+                        v-model="form.name"
+                        class="mb-2"
+                        label="Name"
+                        clearable
+                        variant="underlined"
+                      ></v-text-field>
+                    </v-col>
+                  </v-row>
+                </v-card-text>
+
+                <v-card-actions>
+                  <v-btn
+                    text="Close"
+                    color="error"
+                    @click="isActive.value = false"
+                  ></v-btn>
+                  <v-spacer></v-spacer>
+                  <v-btn
+                    text="Create"
+                    color="success"
+                    :loading="isLoading.createRoom"
+                    @click="createRoom()"
+                  ></v-btn>
+                </v-card-actions>
+              </v-card>
+            </template>
+          </v-dialog>
         </v-col>
       </v-row>
 
@@ -44,17 +83,19 @@
         <v-col
           cols="12"
           md="4"
-          v-if="!loading"
-          v-for="(sala, i) in filteredSalas"
+          v-if="!isLoading.rooms"
+          v-for="(room, i) in filteredRooms"
           :key="i"
         >
           <v-card class="pa-3">
-            <v-card-title>{{ sala.nome }}</v-card-title>
-            <v-card-subtitle>{{ sala.pessoa }}</v-card-subtitle>
+            <v-card-title>{{ room.name }}</v-card-title>
+            <v-card-subtitle>{{ room.user_id }}</v-card-subtitle>
             <v-card-actions>
               <v-divider></v-divider>
               <v-spacer></v-spacer>
-              <v-btn color="success" variant="flat">Join</v-btn>
+              <v-btn color="success" variant="flat" @click="goToRoom(room.id)">
+                Join
+              </v-btn>
             </v-card-actions>
           </v-card>
         </v-col>
@@ -71,54 +112,79 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, reactive, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
-import { getRoom } from "@/controllers";
-import { ro } from "vuetify/locale";
+import { getRoom, postRoom } from "@/controllers";
 
 const drawer = ref(false);
 const router = useRouter();
-const loading = ref(false);
+const isLoading = reactive({
+  rooms: true,
+  createRoom: false,
+});
+const form = reactive({
+  name: "",
+});
 const rooms = ref([]);
 
-const salas = ref([
-  { nome: "Sala-001", pessoa: "Ricardo Sousa" },
-  { nome: "Sala-002", pessoa: "Ricardo Silva" },
-  { nome: "Sala-003", pessoa: "Ricardo Amado" },
-]);
 const filter = ref("");
 
-const filteredSalas = computed(() => {
-  if (!filter.value) return salas.value;
+const filteredRooms = computed(() => {
+  if (!filter.value) return rooms.value;
   const lowerFilter = filter.value.toLowerCase();
-  return salas.value.filter(
-    (sala) =>
-      sala.nome.toLowerCase().includes(lowerFilter) ||
-      sala.pessoa.toLowerCase().includes(lowerFilter)
+  return rooms.value.filter(
+    (room) =>
+      room.name.toLowerCase().includes(lowerFilter) ||
+      room.id.toLowerCase().includes(lowerFilter)
   );
 });
 
-onMounted(async () => {
+const getRooms = async () => {
   try {
-    loading.value = true;
+    isLoading.rooms = true;
     const { data } = await getRoom();
 
     rooms.value = data;
-
-    console.log(rooms.value);
   } catch (error) {
     console.error(error);
   } finally {
-    loading.value = false;
+    isLoading.rooms = false;
   }
+};
+
+onMounted(async () => {
+  await getRooms();
 });
 
 const toggleDrawer = () => {
   drawer.value = !drawer.value;
 };
 
+const goToRoom = (roomId) => {
+  router.push({ name: "Room", params: { roomId: roomId } });
+};
+
 const logoff = () => {
   router.push({ name: "Logoff" });
+};
+
+const createRoom = async () => {
+  if (!form.name.trim().length) return;
+
+  try {
+    isLoading.createRoom = true;
+    const res = await postRoom({
+      name: form.name,
+    });
+
+    if (res) {
+      await getRooms();
+    }
+  } catch (error) {
+    console.error(error);
+  } finally {
+    isLoading.createRoom = false;
+  }
 };
 </script>
 

@@ -1,5 +1,4 @@
 import axios from "axios";
-import { useRouter } from "vue-router";
 
 const baseURL = import.meta.env.VITE_API_BASE_URL;
 const versionApi = "/api";
@@ -43,12 +42,12 @@ _axios.interceptors.response.use(
           throw new Error("Refresh token not available");
         }
 
-        const { access } = await tokenRefresh({ refreshToken });
-        setTokens(access, refreshToken);
+        const { access } = await tokenRefresh({ refresh: refreshToken });
+        setTokens({ access: access, refresh: refreshToken });
         error.config.headers.Authorization = `Bearer ${access}`;
         return _axios(error.config);
       } catch (refreshError) {
-        useRouter().push({ name: "Logoff" });
+        window.location.href = "/logoff";
         return Promise.reject(refreshError);
       }
     }
@@ -98,4 +97,13 @@ const getRoom = async () => {
   }
 };
 
-export { register, token, getRoom };
+const postRoom = async ({ name }) => {
+  try {
+    const { data } = await _axios.post("/room/", { name });
+    return data;
+  } catch (error) {
+    throw error.response?.data;
+  }
+};
+
+export { register, token, getRoom, postRoom };
