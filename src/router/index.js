@@ -26,6 +26,12 @@ const routes = [
       next({ name: "Login" });
     },
   },
+  {
+    path: "/room/:roomId",
+    name: "Room",
+    component: () => import("../pages/Room.vue"),
+    meta: { requiresAuth: true },
+  },
 ];
 
 const router = createRouter({

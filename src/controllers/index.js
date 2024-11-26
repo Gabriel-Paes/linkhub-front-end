@@ -14,7 +14,7 @@ const setTokens = (tokens) =>
 const getTokens = () => JSON.parse(localStorage.getItem("tokens"));
 
 const requiresAuth = (url) => {
-  const authRoutes = /^\/(room|user|posts)\//;
+  const authRoutes = /^\/(room|user|post|link)\//;
   return authRoutes.test(url);
 };
 
@@ -106,4 +106,54 @@ const postRoom = async ({ name }) => {
   }
 };
 
-export { register, token, getRoom, postRoom };
+const getPost = async (roomId) => {
+  try {
+    const res = await _axios.get(`/post/${roomId}`);
+    return res.data;
+  } catch (error) {
+    throw error.response?.data;
+  }
+};
+
+const postPost = async ({ title, body, room_id, links }) => {
+  try {
+    const { data } = await _axios.post("/post/", {
+      title,
+      body,
+      room_id,
+      links,
+    });
+    return data;
+  } catch (error) {
+    throw error.response?.data;
+  }
+};
+
+const getLink = async () => {
+  try {
+    const { data } = await _axios.get("/link/");
+    return data;
+  } catch (error) {
+    throw error.response?.data;
+  }
+};
+
+const postLink = async ({ url }) => {
+  try {
+    const { data } = await _axios.post("/link/", { url });
+    return data;
+  } catch (error) {
+    throw error.response?.data;
+  }
+};
+
+export {
+  register,
+  token,
+  getRoom,
+  postRoom,
+  getPost,
+  postPost,
+  getLink,
+  postLink,
+};
