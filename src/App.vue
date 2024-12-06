@@ -1,6 +1,16 @@
 <template>
   <v-app>
-    <v-navigation-drawer app v-model="drawer">
+    <v-navigation-drawer v-if="showActions" app v-model="drawer">
+      <v-list>
+        <v-list-item to="/">
+          <v-icon>mdi-account-group</v-icon>
+          <v-list-item-title>Rooms</v-list-item-title>
+        </v-list-item>
+        <v-list-item to="/logoff">
+          <v-icon>mdi-logout</v-icon>
+          <v-list-item-title>Logoff</v-list-item-title>
+        </v-list-item>
+      </v-list>
       <template v-slot:append>
         <div class="pa-2">
           <v-btn @click="drawer = false" block variant="tonal" color="error">
@@ -9,15 +19,22 @@
         </div>
       </template>
     </v-navigation-drawer>
-    <v-btn @click="drawer = true" icon v-if="!drawer">
-      <v-icon>mdi-menu</v-icon>
-    </v-btn>
+    <v-fab
+      v-if="showActions && !drawer"
+      icon="mdi-menu"
+      class="mb-10"
+      location="top start"
+      app
+      appear
+      @click="drawer = true"
+    ></v-fab>
 
     <v-main>
       <RouterView />
     </v-main>
 
     <v-fab
+      v-if="showActions"
       color="primary"
       icon="mdi-link"
       class="mb-10"
@@ -28,6 +45,7 @@
     ></v-fab>
 
     <v-dialog
+      v-if="showActions"
       v-model="dialog"
       persistent
       max-width="500"
@@ -92,8 +110,12 @@
 <script setup>
 import { RouterView } from "vue-router";
 import AppFooter from "@/components/AppFooter.vue";
-import { ref, reactive, onMounted } from "vue";
+import { ref, reactive, watch, computed } from "vue";
+import { useRoute } from "vue-router";
 import { getLink, postLink, deleteLink } from "@/controllers";
+
+const route = useRoute();
+const showActions = computed(() => route.meta.requiresAuth === true);
 
 const drawer = ref(false);
 const dialog = ref(false);
@@ -153,7 +175,9 @@ const removeLink = async (link, i) => {
   }
 };
 
-onMounted(async () => {
-  await getLinks();
+watch(showActions, async (newValue) => {
+  if (newValue) {
+    await getLinks();
+  }
 });
 </script>
