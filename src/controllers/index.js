@@ -108,7 +108,7 @@ const postRoom = async ({ name }) => {
 
 const getPost = async (roomId) => {
   try {
-    const res = await _axios.get(`/post/${roomId}`);
+    const res = await _axios.get(`/post/${roomId}/`);
     return res.data;
   } catch (error) {
     throw error.response?.data;
@@ -147,6 +147,15 @@ const postLink = async ({ url }) => {
   }
 };
 
+const deleteLink = async (linkId) => {
+  try {
+    const { data } = await _axios.delete(`/link/${linkId}/`);
+    return data;
+  } catch (error) {
+    throw error.response?.data;
+  }
+};
+
 export {
   register,
   token,
@@ -156,4 +165,5 @@ export {
   postPost,
   getLink,
   postLink,
+  deleteLink,
 };
