@@ -9,6 +9,7 @@
             color="primary"
             label="Name"
             variant="underlined"
+            :rules="[required]"
           ></v-text-field>
 
           <v-text-field
@@ -16,6 +17,7 @@
             color="primary"
             label="Username"
             variant="underlined"
+            :rules="[required]"
           ></v-text-field>
 
           <v-text-field
@@ -23,12 +25,12 @@
             color="primary"
             label="Email"
             variant="underlined"
+            :rules="[required, emailRule]"
           ></v-text-field>
 
           <v-text-field
             v-model="password"
             :readonly="loading"
-            :rules="[required]"
             :append-inner-icon="visible ? 'mdi-eye-off' : 'mdi-eye'"
             :type="visible ? 'text' : 'password'"
             color="primary"
@@ -36,6 +38,7 @@
             clearable
             variant="underlined"
             @click:append-inner="visible = !visible"
+            :rules="[required, passwordRule]"
           ></v-text-field>
 
           <v-card-actions>
@@ -63,6 +66,15 @@
           </v-card-actions>
         </v-container>
       </v-form>
+
+      <v-alert
+        v-if="message"
+        :type="messageType"
+        class="mt-4"
+        dismissible
+      >
+        {{ message }}
+      </v-alert>
     </v-card>
   </v-container>
 </template>
@@ -82,28 +94,67 @@ const password = ref(null);
 const visible = ref(false);
 const loading = ref(false);
 
-const required = (value) => {
-  return !!value || "Field is required";
+// Para exibir mensagens ao usuário
+const message = ref(null);
+const messageType = ref("error");
+
+// Regras de validação
+const required = (value) => !!value || "Field is required";
+
+const emailRule = (value) => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(value) || "Enter a valid email";
+};
+
+const passwordRule = (value) => {
+  return value?.length >= 8 || "A senha precisa conter no mínimo 8 caracteres.";
 };
 
 const onSubmit = async () => {
   if (!form.value) return;
 
   loading.value = true;
+  message.value = null; // Limpa mensagens anteriores
 
   try {
-    await register({
+    const res = await register({
       name: name.value,
       username: username.value,
       email: email.value,
       password: password.value,
     });
 
-    router.push({ name: "Login" });
+    if (res.ok) {
+      // Registro bem-sucedido
+      messageType.value = "success";
+      message.value = "Registro feito com sucesso!";
+      router.push({ name: "Login" });
+    } else if (res.status === 409) {
+      // Erro de conflito (e-mail já registrado)
+      const errorData = await res.json();
+      messageType.value = "error";
+      message.value = errorData.message || "O e-mail já está em uso. Tente outro.";
+    } else {
+      // Outros erros
+      const errorData = await res.json();
+      messageType.value = "error";
+      message.value = errorData.message || "Ocorreu um erro. Tente novamente.";
+    }
   } catch (error) {
-    console.error(error);
+    console.error("Erro ao se comunicar com o servidor:", error);
+    messageType.value = "error";
+    message.value = "Erro ao se comunicar com o servidor.";
   } finally {
     loading.value = false;
   }
 };
 </script>
+
+<style scoped lang="scss">
+.fill-height {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+</style>

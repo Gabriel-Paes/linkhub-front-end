@@ -52,6 +52,15 @@
             Register
           </v-btn>
         </v-form>
+
+        <v-alert
+          v-if="message"
+          :type="messageType"
+          class="mt-4"
+          dismissible
+        >
+          {{ message }}
+        </v-alert>
       </v-card>
     </v-row>
   </v-container>
@@ -70,6 +79,10 @@ const password = ref(null);
 const visible = ref(false);
 const loading = ref(false);
 
+// Para exibir mensagens ao usuário
+const message = ref(null);
+const messageType = ref("error");
+
 const required = (value) => {
   return !!value || "Field is required";
 };
@@ -78,6 +91,7 @@ const onSubmit = async () => {
   if (!form.value) return;
 
   loading.value = true;
+  message.value = null; // Limpa mensagens anteriores
 
   try {
     const res = await token({
@@ -86,10 +100,17 @@ const onSubmit = async () => {
     });
 
     if (res.ok) {
+      messageType.value = "success";
+      message.value = "Login com sucesso!";
       router.push({ name: "Home" });
+    } else {
+      messageType.value = "error";
+      message.value = "Senha ou email incorretos.";
     }
   } catch (error) {
     console.error(error);
+    messageType.value = "error";
+    message.value = "Usuário não encontrado.";
   } finally {
     loading.value = false;
   }
