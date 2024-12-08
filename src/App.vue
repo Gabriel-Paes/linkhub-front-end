@@ -30,7 +30,7 @@
     ></v-fab>
 
     <v-main>
-      <RouterView />
+      <RouterView :links="links" />
     </v-main>
 
     <v-fab

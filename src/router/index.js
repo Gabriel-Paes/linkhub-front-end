@@ -31,6 +31,9 @@ const routes = [
     name: "Room",
     component: () => import("../pages/Room.vue"),
     meta: { requiresAuth: true },
+    props: (route) => ({
+      links: route.query.links || [],
+    }),
   },
 ];
 

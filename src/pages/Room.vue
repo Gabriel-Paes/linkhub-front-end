@@ -104,7 +104,15 @@
                         variant="underlined"
                       ></v-textarea>
                       <h3>Links</h3>
-                      <p>Em breve</p>
+                      <v-combobox
+                        :items="links"
+                        v-model="selectedLinks"
+                        label="Selecione um link"
+                        item-title="url"
+                        item-value="id"
+                        variant="underlined"
+                        multiple
+                      />
                     </v-col>
                   </v-row>
                 </v-card-text>
@@ -142,12 +150,12 @@
             <v-divider></v-divider>
             <v-list>
               <v-list-item
-                v-for="(link, j) in post.links"
+                v-for="(id, j) in post.links"
                 :key="j"
-                :href="link.url"
+                :href="getLinkById(id)"
                 target="_blank"
               >
-                <v-list-item-title>{{ link.text }}</v-list-item-title>
+                <v-list-item-title>{{ getLinkById(id) }}</v-list-item-title>
               </v-list-item>
             </v-list>
           </v-card>
@@ -169,6 +177,20 @@ import { ref, reactive, computed, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { getPost, postPost, getLink, postLink } from "@/controllers";
 
+const props = defineProps({
+  links: {
+    type: Array,
+    default: () => [],
+  },
+});
+
+const getLinkById = (id) => {
+  const link = props.links.find((link) => link.id === id);
+  return link ? link.url : null;
+};
+
+const selectedLinks = ref([]);
+
 const drawer = ref(false);
 const dialog = ref(false);
 const router = useRouter();
@@ -186,9 +208,9 @@ const form = reactive({
   links: [],
 });
 
-const links = reactive({
+/* const links = reactive({
   links: [{ url: "" }],
-});
+}); */
 
 const posts = ref([]);
 
@@ -267,11 +289,14 @@ const createPost = async () => {
 
   try {
     isLoading.createPost = true;
+
+    const linksIds = selectedLinks.value.map((link) => link.id);
+
     const res = await postPost({
       title: form.title,
       body: form.body,
       room_id: roomId.value,
-      links: links.links,
+      links: linksIds,
     });
 
     if (res) {
